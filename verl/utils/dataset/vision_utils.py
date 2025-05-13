@@ -20,6 +20,7 @@ from PIL import Image
 from qwen_vl_utils import fetch_image, fetch_video
 
 
+
 def process_image(image: Union[dict, Image.Image]) -> Image.Image:
     if isinstance(image, Image.Image):
         return image.convert("RGB")
@@ -30,7 +31,15 @@ def process_image(image: Union[dict, Image.Image]) -> Image.Image:
 
     return fetch_image(image)
 
-
+# >>>>> Add to avoid _io.BytesIO bugs
+from PIL import Image
+import io
+def safe_process_image(image):
+    if isinstance(image, (bytes, io.BytesIO)):
+        image = Image.open(io.BytesIO(image) if isinstance(image, bytes) else image).convert("RGB")
+    return process_image(image)
+# <<<<< Add to avoid _io.BytesIO bugs
+            
 VIDEO_FORMAT_HELP = """Currently, we only support the video formats introduced in qwen2-vl.
 Refer to https://github.com/QwenLM/Qwen2.5-VL?tab=readme-ov-file#using---transformers-to-chat.
 
