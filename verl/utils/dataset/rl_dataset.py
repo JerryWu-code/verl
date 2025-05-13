@@ -105,7 +105,12 @@ class RLHFDataset(Dataset):
         dataframes = []
         for parquet_file in self.data_files:
             # read parquet files and cache
-            dataframe = datasets.load_dataset("parquet", data_files=parquet_file)["train"]
+            # dataframe = datasets.load_dataset("parquet", data_files=parquet_file)["train"]
+            from datasets import Dataset
+            import pandas as pd
+
+            df = pd.read_parquet(parquet_file)
+            dataframe = Dataset.from_pandas(df)
             dataframes.append(dataframe)
         self.dataframe: datasets.Dataset = datasets.concatenate_datasets(dataframes)
 
