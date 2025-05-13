@@ -34,9 +34,26 @@ def process_image(image: Union[dict, Image.Image]) -> Image.Image:
 # >>>>> Add to avoid _io.BytesIO bugs
 from PIL import Image
 import io
-def safe_process_image(image):
-    if isinstance(image, (bytes, io.BytesIO)):
-        image = Image.open(io.BytesIO(image) if isinstance(image, bytes) else image).convert("RGB")
+def safe_process_image(image): # handle multiple image formats: dict, bytes, BytesIO, PIL.Image
+    # if image is dict, extract possible fields
+    if isinstance(image, dict):
+        # try 'uri' / 'url' first
+        if "uri" in image:
+            image = image["uri"]
+        elif "url" in image:
+            image = image["url"]
+        elif "bytes" in image:
+            image = image["bytes"]
+        else:
+            raise ValueError(f"Cannot extract valid image field from dict: {image}")
+
+    # if image is bytes → BytesIO → PIL
+    if isinstance(image, bytes):
+        image = Image.open(io.BytesIO(image)).convert("RGB")
+    elif isinstance(image, io.BytesIO):
+        image = Image.open(image).convert("RGB")
+
+    # finally, process str or PIL.Image
     return process_image(image)
 # <<<<< Add to avoid _io.BytesIO bugs
             
